@@ -25,7 +25,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregati
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.SignificantTextAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.significant.SignificantTextAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.GeoBoundsAggregationBuilder;
@@ -808,7 +808,13 @@ public class AggMaker {
         // ignore alias param
         LinkedList<KVValue> params = field.getParams().stream().filter(kv -> !"alias".equals(kv.key)).collect(Collectors.toCollection(LinkedList::new));
 
-        String fieldName = params.poll().toString();
+        KVValue param = Objects.requireNonNull(params.poll());
+        String fieldName;
+        if (param.value instanceof NestedType) {
+            fieldName = ((NestedType) param.value).field;
+        } else {
+            fieldName = param.toString();
+        }
 
         double[] ds = Util.KV2DoubleArr(params);
 
